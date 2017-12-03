@@ -1,0 +1,34 @@
+library(xlsx)
+library(XML)
+library(jsonlite)
+
+
+#Question1
+fileUrl<-"https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2Fss06hid.csv" #create file link
+download.file(fileUrl,destfile = "data/survey.csv")
+survey<-read.csv("data/survey.csv")
+str(survey$VAL)
+sum(survey$VAL>=24,na.rm = TRUE)
+
+#Question2
+fileUrl<-"https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2FDATA.gov_NGAP.xlsx"#create file link
+download.file(fileUrl,destfile = "data/gas.xlsx",mode='wb')
+library(xlsx)
+dat<-read.xlsx("data/gas.xlsx",sheetIndex = 1,rowIndex = c(18:23),colIndex = c(7:15))
+sum(dat$Zip*dat$Ext,na.rm=T)
+
+#Question3
+fileUrl<-"https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2Frestaurants.xml" #create file link
+download.file(fileUrl, destfile = "data/restaurants.xml")
+doc = xmlTreeParse(file = "data/restaurants.xml", useInternalNodes = TRUE)
+rootNode<-xmlRoot(doc)
+xmlName(rootNode)
+names(rootNode)
+restaurantscode<-xpathApply(rootNode,"//zipcode",xmlValue) #Search for zipscode
+zips<-as.numeric(unlist(restaurantscode, recursive = TRUE, use.names = TRUE))
+sum(zips==21231)
+
+#Question4
+fileUrl<-"https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2Fss06pid.csv" #create file link
+download.file(fileUrl,destfile = "data/survey1.csv")
+survey1<-read.csv("data/survey1.csv")
