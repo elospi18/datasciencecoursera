@@ -1,0 +1,50 @@
+#Run_analysis
+
+#First we read the test and train data sets in a dataframe called Xtestdata and Xtraindata; labels are stored in testlabels and trainlabels respectively
+Xtestdata<-read.table("X_test.txt")
+testlabels<-read.table("y_test.txt")
+Xtraindata<-read.table("X_train.txt")
+trainlabels<-read.table("y_train.txt")
+
+#we read the features of the dataset in order to incorporate them later into the testdata
+datanames<-read.table("features.txt")
+#using colnames we incorporate the features names into the testdata and traindata
+colnames(Xtestdata)<-datanames$V2
+colnames(Xtraindata)<-datanames$V2
+
+#with the colnames we proceed to add one column in each data set of the label and the subject
+Xtestdata$Label<-testlabels$V1
+Xtraindata$Label<-trainlabels$V1
+
+#We load the subjects data
+subject_train<-read.table("subject_train.txt")
+subject_test<-read.table("subject_test.txt")
+
+#and then we create the id column for each dataset
+Xtestdata$id<-subject_test$V1
+Xtraindata$id<-subject_train$V1
+#now we merge the data set using rbind
+completedata<-rbind(Xtraindata,Xtestdata)
+
+#We extract the variables containing mean in a vector
+meanstdvector <- grepl("mean\\(\\)", names(completedata)) |
+  grepl("std\\(\\)", names(completedata))
+
+#Then we add to this vector the id and label column 
+which(colnames(completedata)=="Label")
+which(colnames(completedata)=="id")
+meanstdvector[562:563] <- TRUE
+
+#then we create a final dataset subsetting by this vector
+finaldata<- completedata[,meanstdvector]
+
+#we create the factor levels
+finaldata$Label <- factor(finaldata$Label, labels=c("Walking","Walking Upstairs", "Walking Downstairs", "Sitting", "Standing", "Laying"))
+
+#create the melted data like a panel one
+library(reshape2)
+meltdata <- melt(finaldata, id=c("id","Label"))
+finaldata1<-dcast(meltdata,id+Label~variable,mean)
+
+#Write the text file
+write.table(finaldata1,file = "Run_analysis.txt",row.names = FALSE)
